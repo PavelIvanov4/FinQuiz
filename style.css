@@ -103,6 +103,27 @@
             outline: none;
             border-radius: 50px 0 0 50px;
         }
+		
+		.give-up-button {
+			background-color: var(--danger);
+			color: white;
+			border: none;
+			border-radius: 0 50px 50px 0;
+			padding: 18px 25px;
+			cursor: pointer;
+			font-size: 1.1rem;
+			font-weight: bold;
+			transition: var(--transition);
+		}
+
+		.give-up-button:hover {
+			background-color: #c92a2a;
+		}
+
+		.give-up-button:disabled {
+			background-color: #adb5bd;
+			cursor: not-allowed;
+		}
 
         /* Removed the submit button styling since we don't need it anymore */
 
@@ -191,9 +212,25 @@
             color: var(--success);
             font-weight: bold;
         }
+		
+		td.unguessed {
+			position: relative;               /* needed for the ::after overlay */
+			color: #999;                      /* optional: make the word look “dimmed” */
+		}
+		
+		td.unguessed::after {
+			content: '✗';
+			position: absolute;
+			top: 50%;
+			right: 8px;
+			transform: translateY(-50%);
+			color: var(--danger);
+			font-weight: bold;
+			font-size: 1.2rem;
+		}
 
         td.empty::before {
-            content: '---';
+            content: '';
             color: #ccc;
             font-style: italic;
         }
