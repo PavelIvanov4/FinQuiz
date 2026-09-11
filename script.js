@@ -15,6 +15,9 @@
         const totalCountEl = document.getElementById('total-count');
         const foundCountEl = document.getElementById('found-count');
         const remainingCountEl = document.getElementById('remaining-count');
+		const giveUpButton = document.getElementById('giveUpButton');   // <‑ NEW
+		// --------- **new** flag ----------------------------------------------------
+		let gaveUp = false; 
 
         // Calculate total words
         let totalWords = 0;
@@ -79,49 +82,75 @@
 
         // Function to render the table
         function renderTable() {
-            const table = document.getElementById('wordTable');
-            table.innerHTML = '';
-            
-            // Create header row
-            const headerRow = document.createElement('tr');
-            for (let category in wordData) {
-                const th = document.createElement('th');
-                th.textContent = category;
-                headerRow.appendChild(th);
-            }
-            table.appendChild(headerRow);
-            
-            // Find maximum words in any category
-            let maxWords = 0;
-            for (let category in wordData) {
-                if (wordData[category].length > maxWords) {
-                    maxWords = wordData[category].length;
+    const table = document.getElementById('wordTable');
+    table.innerHTML = '';
+
+    /* ----- header (unchanged) ----- */
+    const headerRow = document.createElement('tr');
+    for (let cat in wordData) {
+        const th = document.createElement('th');
+        th.textContent = cat;
+        headerRow.appendChild(th);
+    }
+    table.appendChild(headerRow);
+
+    /* ----- find longest column ----- */
+    let maxWords = 0;
+    for (let cat in wordData) {
+        if (wordData[cat].length > maxWords) maxWords = wordData[cat].length;
+    }
+
+    /* ----- data rows ----- */
+    for (let i = 0; i < maxWords; i++) {
+        const row = document.createElement('tr');
+
+        for (let cat in wordData) {
+            const td = document.createElement('td');
+
+            if (i < wordData[cat].length) {
+                const word = wordData[cat][i];
+
+                if (guessedWords.has(word)) {               // ✅ guessed by the player
+                    td.textContent = word;
+                    td.classList.add('guessed');
+
+                } else if (gaveUp) {                         // ← **NEW** – after Give Up
+                    /* Show the actual word *and* the red X */
+                    td.textContent = word;                    // <‑‑ show the word
+                    td.classList.add('unguessed');           // ← triggers the X overlay
+
+                } else {                                     // still hidden
+                    td.textContent = '•••••';
+                    td.classList.add('empty');
                 }
+            } else {
+                td.classList.add('empty');
             }
-            
-            // Create data rows
-            for (let i = 0; i < maxWords; i++) {
-                const row = document.createElement('tr');
-                
-                for (let category in wordData) {
-                    const td = document.createElement('td');
-                    if (i < wordData[category].length) {
-                        const word = wordData[category][i];
-                        if (guessedWords.has(word)) {
-                            td.textContent = word;
-                            td.classList.add('guessed');
-                        } else {
-                            td.classList.add('empty');
-                        }
-                    } else {
-                        td.classList.add('empty');
-                    }
-                    row.appendChild(td);
-                }
-                
-                table.appendChild(row);
-            }
+
+            row.appendChild(td);
         }
+
+        table.appendChild(row);
+    }
+}
+		
+		function handleGiveUp() {
+		// 1️⃣  Tell the UI we have given up
+		gaveUp = true;
+
+		// 2️⃣  Show every remaining word (but don’t count them as “found”)
+		renderTable();          // re‑draw the table with the red ✗ marks
+
+		// 3️⃣  (Do NOT call updateStats() – the “found” bar stays unchanged)
+
+		// 4️⃣  Disable further interaction
+		inputField.disabled = true;
+		giveUpButton.disabled = true;
+
+		// 5️⃣  Friendly end‑message
+		messageEl.textContent = 'Peli päättyi! Kaikki sanat on paljastettu.';
+		messageEl.style.color = 'var(--danger)';
+	}
 
         // Event listener for input - automatically process words as you type
         let inputTimeout;
@@ -157,6 +186,8 @@
                 }
             }
         });
+		
+		giveUpButton.addEventListener('click', handleGiveUp);
 
         // Initial render
         renderTable();
